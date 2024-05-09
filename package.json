@@ -1,0 +1,15 @@
+{
+    "name": "buy-those-tickets",
+    "version": "1.0.0",
+    "description": "Bitso Crypto Code Dojo Exercise",
+    "main": "index.js",
+    "scripts": {
+        "test": "npx hardhat test"
+    },
+    "author": "Claudio Romandini",
+    "license": "MIT",
+    "devDependencies": {
+        "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+        "hardhat": "^2.22.3"
+    }
+}
