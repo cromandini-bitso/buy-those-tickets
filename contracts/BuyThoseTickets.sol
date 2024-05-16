@@ -139,6 +139,12 @@ contract BuyThoseTickets is Ownable {
         return 1;
     }
 
+    function withdrawFunds() external onlyOwner {
+        uint balance = address(this).balance;
+        address payable owner = payable(msg.sender);
+        owner.transfer(balance);
+    }
+
     modifier eventFound(string memory _name) {
         bytes32 eventId = getEventId(_name);
         if (!eventIds.contains(eventId)) {

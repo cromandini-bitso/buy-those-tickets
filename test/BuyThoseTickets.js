@@ -269,9 +269,9 @@ describe("BuyThoseTickets contract", function () {
                 .withArgs(addr2);
         });
 
-        it("does not transfer ownership if the receiver already owns a ticket of the event", async function () {
+        it("Does not transfer ownership if the receiver already owns a ticket of the event", async function () {
             const { contract, owner, addr1, addr2 } = await loadFixture(deployContract);
-            const eventName = "Suicidal Tendencies/Teatro Flores";
+            const eventName = "Cavalera Conspiracy/Teatro Flores";
 
             // Add event and buy tickets with addr1 and addr2
             await contract.addEvent(eventName, eventDate, ticketPrice, 1500);
@@ -282,6 +282,39 @@ describe("BuyThoseTickets contract", function () {
             await expect(contract.connect(addr1).resellTicket(eventName, addr2))
                 .to.be.revertedWithCustomError(contract, "AlreadyOwner")
                 .withArgs(addr2);
+        });
+    });
+
+    describe("Withdraw funds", function () {
+        it("Transfers the contract funds to the contract owner", async function () {
+            const { contract, owner, addr1, addr2 } = await loadFixture(deployContract);
+            const eventName = "Slayer/Luna Park";
+            const ticketPrice = ethers.parseUnits("1000", "wei");
+
+            // Add event and buy 3 tickets
+            await contract.addEvent(eventName, eventDate, ticketPrice, 1500);
+            await contract.buyTicket(eventName, { value: ticketPrice });
+            await contract.connect(addr1).buyTicket(eventName, { value: ticketPrice });
+            await contract.connect(addr2).buyTicket(eventName, { value: ticketPrice });
+
+            // Verify the cost of 3 tickets is transferred to the owner
+            await expect(() =>
+                contract.connect(owner).withdrawFunds()
+            ).to.changeEtherBalance(owner, "+3000");
+        });
+
+        it("Can only be called by the contract owner", async function () {
+            const { contract, owner, addr1 } = await loadFixture(deployContract);
+            const eventName = "System of a Down/Movistar Arena";
+
+            // Add event and buy ticket
+            await contract.addEvent(eventName, eventDate, ticketPrice, 1500);
+            await contract.buyTicket(eventName, { value: ticketPrice });
+
+            // Attempt to withdraw funds with addr1 and verify tx is reverted
+            await expect(contract.connect(addr1).withdrawFunds())
+                .to.be.revertedWithCustomError(contract, "OwnableUnauthorizedAccount")
+                .withArgs(addr1);
         });
     });
 });
